@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ChatLayoutClient } from "./chat-layout-client";
 
@@ -20,7 +20,7 @@ export default async function ChatLayout({
     .select("id")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   const { data: member } = await supabase
     .from("workspace_members")
@@ -28,7 +28,7 @@ export default async function ChatLayout({
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
     .single();
-  if (!member) redirect("/onboarding");
+  if (!member) notFound();
 
   return (
     <ChatLayoutClient

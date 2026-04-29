@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { NotificationsClient } from "./notifications-client";
 
 export const metadata = { title: "Notification Preferences - TeamForge" };
@@ -22,7 +22,7 @@ export default async function NotificationsPage({
     .select("*")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   return (
     <NotificationsClient

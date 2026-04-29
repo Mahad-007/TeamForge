@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { SettingsClient } from "./settings-client";
 
 export const metadata = { title: "Settings - TeamForge" };
@@ -22,7 +22,7 @@ export default async function SettingsPage({
     .select("*")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   const isOwner = workspace.owner_id === user.id;
 

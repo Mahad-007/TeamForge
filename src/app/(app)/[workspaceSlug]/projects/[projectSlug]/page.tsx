@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProjectDetailClient } from "./project-detail-client";
 
@@ -29,7 +29,7 @@ export default async function ProjectDetailPage({
     .select("id")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   const { data: project } = await supabase
     .from("projects")

@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { IntegrationsClient } from "./integrations-client";
 
 export const metadata = { title: "Integrations - TeamForge" };
@@ -22,7 +22,7 @@ export default async function IntegrationsPage({
     .select("*")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   const { data: member } = await supabase
     .from("workspace_members")

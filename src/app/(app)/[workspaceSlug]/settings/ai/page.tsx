@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { AiSettingsClient } from "./ai-settings-client";
 
 export const metadata = { title: "AI Settings - TeamForge" };
@@ -22,7 +22,7 @@ export default async function AiSettingsPage({
     .select("*")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   const { data: member } = await supabase
     .from("workspace_members")
