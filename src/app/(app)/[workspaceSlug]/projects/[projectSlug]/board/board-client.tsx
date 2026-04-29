@@ -94,7 +94,7 @@ export function BoardClient({
       {isLoading ? (
         <div className="flex gap-4">
           {statuses.map((s) => (
-            <Skeleton key={s} className="h-96 w-72 shrink-0 rounded-lg" />
+            <Skeleton key={s} className="h-96 min-w-0 flex-1 rounded-lg" />
           ))}
         </div>
       ) : (
