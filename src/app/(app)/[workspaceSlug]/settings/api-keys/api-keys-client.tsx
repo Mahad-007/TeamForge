@@ -81,7 +81,7 @@ export function ApiKeysClient({ workspaceId, workspaceSlug, memberId }: ApiKeysC
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
 
-          <DialogTrigger>
+          <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-1.5" />
               Create API Key
