@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal docs
+TeamForge_PRD.md
+TeamForge_Product_Spec.md
