@@ -38,8 +38,12 @@ export function useMessages(channelId: string) {
   useEffect(() => {
     if (!channelId) return;
 
+    // Use a unique name per effect invocation to avoid "cannot add callbacks
+    // after subscribe()" errors when React re-runs effects before the async
+    // removeChannel() from the previous cleanup has completed.
+    const subId = Math.random().toString(36).slice(2);
     const channel = supabase
-      .channel(`room:${channelId}`)
+      .channel(`messages:${channelId}:${subId}`)
       .on(
         "postgres_changes",
         {
