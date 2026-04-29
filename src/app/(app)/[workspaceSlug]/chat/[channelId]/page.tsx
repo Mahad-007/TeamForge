@@ -30,18 +30,23 @@ export default async function ChannelPage({
     .single();
   if (!member) redirect("/onboarding");
 
-  // Auto-join public channels
-  const { data: channel } = await supabase
+  // Auto-join public/project channels
+  const { data: channel, error: channelError } = await supabase
     .from("channels")
     .select("type")
     .eq("id", channelId)
     .single();
 
+  if (channelError) {
+    console.error("Channel fetch error:", channelError);
+  }
+
   if (channel && (channel.type === "public" || channel.type === "project")) {
-    await supabase.from("channel_members").upsert(
+    const { error: upsertError } = await supabase.from("channel_members").upsert(
       { channel_id: channelId, member_id: member.id },
       { onConflict: "channel_id,member_id" }
     );
+    if (upsertError) console.error("Auto-join error:", upsertError);
   }
 
   // Mark as read
