@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { AnalyticsClient } from "./analytics-client";
 
@@ -20,7 +20,7 @@ export default async function AnalyticsPage({
     .select("id")
     .eq("slug", workspaceSlug)
     .single();
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   return <AnalyticsClient workspaceId={workspace.id} />;
 }

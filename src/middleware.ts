@@ -35,8 +35,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Root path — redirect to workspace dashboard or onboarding
-  if (pathname === "/") {
+  // Root path or onboarding — redirect to workspace dashboard if user has memberships
+  if (pathname === "/" || pathname === "/onboarding") {
     const { data: memberships } = await supabase
       .from("workspace_members")
       .select("workspace:workspaces(slug)")
@@ -44,14 +44,21 @@ export async function middleware(request: NextRequest) {
       .eq("status", "active")
       .limit(1);
 
-    const url = request.nextUrl.clone();
     if (memberships && memberships.length > 0) {
       const workspace = memberships[0].workspace as unknown as { slug: string };
+      const url = request.nextUrl.clone();
       url.pathname = `/${workspace.slug}/dashboard`;
-    } else {
-      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
     }
-    return NextResponse.redirect(url);
+
+    // No workspaces — let /onboarding render, redirect / to /onboarding
+    if (pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+
+    return supabaseResponse;
   }
 
   return supabaseResponse;
