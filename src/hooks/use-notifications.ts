@@ -31,8 +31,13 @@ export function useNotifications(userId: string) {
   useEffect(() => {
     if (!userId) return;
 
-    const channel = supabase
-      .channel(`notifications:${userId}`)
+    // Use a unique name per effect invocation to avoid stale channel name
+    // collisions when React re-runs effects before async cleanup completes.
+    const subId = Math.random().toString(36).slice(2);
+    const channel = supabase.channel(`notifications:${userId}:${subId}`);
+    if (!channel) return;
+
+    channel
       .on(
         "postgres_changes",
         {
@@ -52,7 +57,7 @@ export function useNotifications(userId: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [userId, supabase, queryClient]);
 

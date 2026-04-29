@@ -14,6 +14,8 @@ export function useTyping(channelId: string, displayName: string) {
 
     const subId = Math.random().toString(36).slice(2);
     const channel = supabase.channel(`typing:${channelId}:${subId}`);
+    if (!channel) return;
+
     channelRef.current = channel;
 
     channel
@@ -33,7 +35,7 @@ export function useTyping(channelId: string, displayName: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [channelId, displayName, supabase]);

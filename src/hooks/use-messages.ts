@@ -42,8 +42,10 @@ export function useMessages(channelId: string) {
     // after subscribe()" errors when React re-runs effects before the async
     // removeChannel() from the previous cleanup has completed.
     const subId = Math.random().toString(36).slice(2);
-    const channel = supabase
-      .channel(`messages:${channelId}:${subId}`)
+    const channel = supabase.channel(`messages:${channelId}:${subId}`);
+    if (!channel) return;
+
+    channel
       .on(
         "postgres_changes",
         {
@@ -59,7 +61,7 @@ export function useMessages(channelId: string) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [channelId, supabase, queryClient]);
 
