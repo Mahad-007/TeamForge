@@ -19,7 +19,7 @@ export default async function ProjectDocsPage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: project } = await supabase
@@ -27,7 +27,7 @@ export default async function ProjectDocsPage({
     .select("id, name, slug")
     .eq("workspace_id", workspace.id)
     .eq("slug", projectSlug)
-    .single();
+    .maybeSingle();
   if (!project) redirect(`/${workspaceSlug}/projects`);
 
   const { data: member } = await supabase
@@ -35,7 +35,7 @@ export default async function ProjectDocsPage({
     .select("id")
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   return (
     <ProjectDocsClient

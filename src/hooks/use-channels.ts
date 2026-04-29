@@ -35,7 +35,7 @@ export function useChannel(channelId: string) {
         .from("channels")
         .select("*")
         .eq("id", channelId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

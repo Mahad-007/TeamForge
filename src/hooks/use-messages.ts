@@ -184,7 +184,7 @@ export function useToggleReaction() {
         .from("messages")
         .select("reactions")
         .eq("id", messageId)
-        .single();
+        .maybeSingle();
 
       const reactions = (msg?.reactions ?? {}) as Record<string, string[]>;
       const emojiList = reactions[emoji] ?? [];

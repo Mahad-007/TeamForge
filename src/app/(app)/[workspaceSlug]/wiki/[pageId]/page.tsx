@@ -19,7 +19,7 @@ export default async function WikiPagePage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: member } = await supabase
@@ -27,7 +27,7 @@ export default async function WikiPagePage({
     .select("id")
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
   if (!member) redirect("/onboarding");
 
   return (

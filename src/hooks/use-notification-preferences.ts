@@ -59,9 +59,9 @@ export function useNotificationPreferences(
         .select("*")
         .eq("user_id", userId)
         .eq("workspace_id", workspaceId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) throw error;
 
       // Return existing preferences or defaults
       if (data) {

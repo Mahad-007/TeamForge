@@ -18,7 +18,7 @@ export async function POST(
       .select("id, assignee_id")
       .eq("identifier", identifier.toUpperCase())
       .eq("workspace_id", workspaceId)
-      .single();
+      .maybeSingle();
 
     if (!task) throw new Error("Task not found");
 
@@ -29,7 +29,7 @@ export async function POST(
         .from("workspace_members")
         .select("user_id")
         .eq("id", task.assignee_id)
-        .single();
+        .maybeSingle();
       userId = member?.user_id;
     }
 
@@ -40,7 +40,7 @@ export async function POST(
         .select("user_id")
         .eq("workspace_id", workspaceId)
         .limit(1)
-        .single();
+        .maybeSingle();
       userId = m?.user_id;
     }
 

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       .select("id")
       .eq("workspace_id", workspaceId)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     const { data, error } = await supabase
       .from("projects")

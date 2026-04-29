@@ -19,7 +19,7 @@ export default async function TimelinePage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: project } = await supabase
@@ -27,7 +27,7 @@ export default async function TimelinePage({
     .select("id, name, slug")
     .eq("workspace_id", workspace.id)
     .eq("slug", projectSlug)
-    .single();
+    .maybeSingle();
   if (!project) redirect(`/${workspaceSlug}/projects`);
 
   return (

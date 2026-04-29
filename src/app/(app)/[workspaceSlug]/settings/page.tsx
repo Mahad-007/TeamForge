@@ -21,7 +21,7 @@ export default async function SettingsPage({
     .from("workspaces")
     .select("*")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const isOwner = workspace.owner_id === user.id;

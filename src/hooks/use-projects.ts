@@ -36,7 +36,7 @@ export function useProject(projectSlug: string, workspaceId: string) {
         .select("*")
         .eq("workspace_id", workspaceId)
         .eq("slug", projectSlug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

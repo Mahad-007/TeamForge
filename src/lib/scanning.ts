@@ -43,7 +43,7 @@ export async function processScan(
       .from("repository_scans")
       .select("*, project:projects(github_repo_url)")
       .eq("id", scanId)
-      .single();
+      .maybeSingle();
 
     if (!scan) throw new Error("Scan not found");
 

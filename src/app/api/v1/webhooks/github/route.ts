@@ -106,7 +106,7 @@ async function handlePushEvent(
     .from("projects")
     .select("id, workspace_id")
     .ilike("github_repo_url", `%${repoFullName}%`)
-    .single();
+    .maybeSingle();
 
   if (!project) {
     console.log(`No project found for repository: ${repoFullName}`);
@@ -119,7 +119,7 @@ async function handlePushEvent(
     .select("id")
     .eq("workspace_id", project.workspace_id)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (!member) return;
 
@@ -158,7 +158,7 @@ async function handlePullRequestEvent(
     .from("projects")
     .select("id, workspace_id")
     .ilike("github_repo_url", `%${repoFullName}%`)
-    .single();
+    .maybeSingle();
 
   if (!project) return;
 
@@ -211,7 +211,7 @@ async function handlePullRequestReviewEvent(
     .from("projects")
     .select("id, workspace_id")
     .ilike("github_repo_url", `%${repoFullName}%`)
-    .single();
+    .maybeSingle();
 
   if (!project) return;
 

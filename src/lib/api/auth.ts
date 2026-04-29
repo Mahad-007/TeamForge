@@ -29,7 +29,7 @@ export async function authenticateAPIKey(
     .select("id, workspace_id, permissions, is_active, expires_at")
     .eq("key_prefix", prefix)
     .eq("key_hash", hash)
-    .single();
+    .maybeSingle();
 
   if (error || !key) {
     throw new APIError("UNAUTHORIZED", "Invalid API key", 401);

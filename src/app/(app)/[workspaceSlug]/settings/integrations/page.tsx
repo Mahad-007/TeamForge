@@ -21,7 +21,7 @@ export default async function IntegrationsPage({
     .from("workspaces")
     .select("*")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: member } = await supabase
@@ -30,7 +30,7 @@ export default async function IntegrationsPage({
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
     .eq("status", "active")
-    .single();
+    .maybeSingle();
 
   return (
     <IntegrationsClient

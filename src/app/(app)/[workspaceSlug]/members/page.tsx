@@ -19,14 +19,14 @@ export default async function MembersPage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
 
   const { data: currentMember } = await supabase
     .from("workspace_members")
     .select("id, role:roles(permissions)")
     .eq("workspace_id", workspace!.id)
     .eq("user_id", user!.id)
-    .single();
+    .maybeSingle();
 
   return (
     <MembersClient
