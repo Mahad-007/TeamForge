@@ -86,7 +86,7 @@ export function useWikiPage(pageId: string) {
         .from("wiki_pages")
         .select("*, last_editor:workspace_members!wiki_pages_last_edited_by_fkey(display_name)")
         .eq("id", pageId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -155,7 +155,7 @@ export function useUpdateWikiPage() {
           .from("wiki_pages")
           .select("content, title")
           .eq("id", id)
-          .single();
+          .maybeSingle();
 
         if (current) {
           await supabase.from("wiki_page_versions").insert({

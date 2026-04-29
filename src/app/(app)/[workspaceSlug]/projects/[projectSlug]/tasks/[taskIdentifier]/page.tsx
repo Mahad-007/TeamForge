@@ -25,7 +25,7 @@ export default async function TaskPage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: project } = await supabase
@@ -33,7 +33,7 @@ export default async function TaskPage({
     .select("id, name, slug, settings")
     .eq("workspace_id", workspace.id)
     .eq("slug", projectSlug)
-    .single();
+    .maybeSingle();
   if (!project) redirect(`/${workspaceSlug}/projects`);
 
   const { data: task } = await supabase
@@ -43,7 +43,7 @@ export default async function TaskPage({
     )
     .eq("project_id", project.id)
     .eq("identifier", taskIdentifier)
-    .single();
+    .maybeSingle();
 
   if (!task) redirect(`/${workspaceSlug}/projects/${projectSlug}/board`);
 
@@ -52,7 +52,7 @@ export default async function TaskPage({
     .select("id")
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   const settings = project.settings as { statuses?: string[] } | null;
   const statuses = settings?.statuses ?? [

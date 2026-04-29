@@ -21,20 +21,25 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["workspace-analytics", workspaceId],
     queryFn: async () => {
-      const [projects, tasks, completedTasks, bugs, members] =
+      const [projects, tasks, bugs, members] =
         await Promise.all([
-          supabase.from("projects").select("id, name, slug, status, priority", { count: "exact" }).eq("workspace_id", workspaceId).neq("status", "archived"),
+          supabase.from("projects").select("id, name, slug, status, priority, settings", { count: "exact" }).eq("workspace_id", workspaceId).neq("status", "archived"),
           supabase.from("tasks").select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId),
-          supabase.from("tasks").select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId).not("completed_at", "is", null),
           supabase.from("bugs").select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId).in("status", ["open", "confirmed", "in_progress"]),
           supabase.from("workspace_members").select("id, display_name", { count: "exact" }).eq("workspace_id", workspaceId).eq("status", "active"),
         ]);
 
-      // Per-project task counts
+      // Per-project task counts — use each project's final status as "done"
+      const defaultStatuses = ["Backlog", "Todo", "In Progress", "Review", "Done"];
       const projectStats = [];
+      let totalCompleted = 0;
       for (const proj of projects.data ?? []) {
+        const statuses = (proj.settings as Record<string, unknown>)?.statuses as string[] ?? defaultStatuses;
+        const doneStatus = statuses[statuses.length - 1];
+
         const { count: total } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id);
-        const { count: done } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id).not("completed_at", "is", null);
+        const { count: done } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id).eq("status", doneStatus);
+        totalCompleted += done ?? 0;
         projectStats.push({
           ...proj,
           totalTasks: total ?? 0,
@@ -46,13 +51,13 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
       return {
         totalProjects: projects.count ?? 0,
         totalTasks: tasks.count ?? 0,
-        completedTasks: completedTasks.count ?? 0,
+        completedTasks: totalCompleted,
         openBugs: bugs.count ?? 0,
         totalMembers: members.count ?? 0,
         projects: projectStats,
         overallCompletion:
           (tasks.count ?? 0) > 0
-            ? Math.round(((completedTasks.count ?? 0) / (tasks.count ?? 1)) * 100)
+            ? Math.round((totalCompleted / (tasks.count ?? 1)) * 100)
             : 0,
       };
     },
@@ -64,12 +69,13 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
     queryFn: async () => {
       const { data: allTasks } = await supabase
         .from("tasks")
-        .select("assignee_id, completed_at, assignee:workspace_members!tasks_assignee_id_fkey(display_name)")
+        .select("assignee_id, status, project:projects!tasks_project_id_fkey(settings), assignee:workspace_members!tasks_assignee_id_fkey(display_name)")
         .eq("workspace_id", workspaceId)
         .not("assignee_id", "is", null);
 
       if (!allTasks || allTasks.length === 0) return [];
 
+      const defaultStatuses = ["Backlog", "Todo", "In Progress", "Review", "Done"];
       const memberMap = new Map<
         string,
         { name: string; completed: number; open: number }
@@ -80,13 +86,17 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
         const name =
           (task.assignee as { display_name: string | null } | null)
             ?.display_name ?? "Unassigned";
+        const statuses = (task.project as Record<string, unknown>)?.settings
+          ? ((task.project as Record<string, unknown>).settings as Record<string, unknown>)?.statuses as string[] ?? defaultStatuses
+          : defaultStatuses;
+        const doneStatus = statuses[statuses.length - 1];
 
         if (!memberMap.has(memberId)) {
           memberMap.set(memberId, { name, completed: 0, open: 0 });
         }
 
         const entry = memberMap.get(memberId)!;
-        if (task.completed_at) {
+        if (task.status === doneStatus) {
           entry.completed += 1;
         } else {
           entry.open += 1;

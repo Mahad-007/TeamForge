@@ -16,7 +16,7 @@ export async function GET(
       .select("*")
       .eq("identifier", identifier.toUpperCase())
       .eq("workspace_id", workspaceId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return apiSuccess(data);

@@ -21,7 +21,7 @@ export default async function NotificationsPage({
     .from("workspaces")
     .select("*")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   return (

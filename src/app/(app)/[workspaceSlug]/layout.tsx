@@ -23,7 +23,7 @@ export default async function WorkspaceLayout({
     .from("workspaces")
     .select("*")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
 
   if (!workspace) redirect("/onboarding");
 
@@ -34,7 +34,7 @@ export default async function WorkspaceLayout({
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
     .eq("status", "active")
-    .single();
+    .maybeSingle();
 
   if (!membership) redirect("/onboarding");
 
@@ -43,7 +43,7 @@ export default async function WorkspaceLayout({
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   return (
     <AppShell

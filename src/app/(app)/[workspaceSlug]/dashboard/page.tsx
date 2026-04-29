@@ -19,20 +19,20 @@ export default async function DashboardPage({
     .from("profiles")
     .select("display_name")
     .eq("id", user!.id)
-    .single();
+    .maybeSingle();
 
   const { data: workspace } = await supabase
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
 
   const { data: member } = await supabase
     .from("workspace_members")
     .select("id")
     .eq("workspace_id", workspace!.id)
     .eq("user_id", user!.id)
-    .single();
+    .maybeSingle();
 
   return (
     <DashboardClient

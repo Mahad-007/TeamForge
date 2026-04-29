@@ -19,7 +19,7 @@ export default async function ChannelPage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   const { data: member } = await supabase
@@ -27,7 +27,7 @@ export default async function ChannelPage({
     .select("id, display_name")
     .eq("workspace_id", workspace.id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
   if (!member) redirect("/onboarding");
 
   // Auto-join public/project channels
@@ -35,7 +35,7 @@ export default async function ChannelPage({
     .from("channels")
     .select("type")
     .eq("id", channelId)
-    .single();
+    .maybeSingle();
 
   if (channelError) {
     console.error("Channel fetch error:", channelError);

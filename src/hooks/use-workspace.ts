@@ -36,7 +36,7 @@ export function useWorkspace(slug: string) {
         .from("workspaces")
         .select("*")
         .eq("slug", slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -62,7 +62,7 @@ export function useCurrentMember(workspaceId: string) {
         .eq("workspace_id", workspaceId)
         .eq("user_id", user.id)
         .eq("status", "active")
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

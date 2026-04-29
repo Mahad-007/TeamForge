@@ -72,7 +72,6 @@ function buildPrintableDocument(title: string, tableHtml: string): string {
   <h1>${escapeHtml(title)}</h1>
   <p class="meta">Exported on ${escapeHtml(exportDate)}</p>
   ${tableHtml}
-  <script>window.onload = function() { window.print(); };</script>
 </body>
 </html>`;
 }
@@ -114,6 +113,7 @@ export function exportTasksPDF(tasks: TaskRow[], projectName: string): void {
   if (win) {
     win.document.write(html);
     win.document.close();
+    win.onload = () => win.print();
   }
 }
 
@@ -154,5 +154,6 @@ export function exportBugsPDF(bugs: BugRow[], projectName: string): void {
   if (win) {
     win.document.write(html);
     win.document.close();
+    win.onload = () => win.print();
   }
 }

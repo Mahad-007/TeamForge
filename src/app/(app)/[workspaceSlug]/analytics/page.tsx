@@ -19,7 +19,7 @@ export default async function AnalyticsPage({
     .from("workspaces")
     .select("id")
     .eq("slug", workspaceSlug)
-    .single();
+    .maybeSingle();
   if (!workspace) redirect("/onboarding");
 
   return <AnalyticsClient workspaceId={workspace.id} />;
