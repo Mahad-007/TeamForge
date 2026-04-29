@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Moon, Sun, User } from "lucide-react";
+import { LogOut, Menu, Moon, Sun, User } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 import { useTheme } from "next-themes";
 
@@ -19,12 +19,14 @@ interface HeaderProps {
   userDisplayName: string;
   userAvatarUrl?: string | null;
   userEmail: string;
+  onMobileMenuToggle?: () => void;
 }
 
 export function Header({
   userDisplayName,
   userAvatarUrl,
   userEmail,
+  onMobileMenuToggle,
 }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -46,6 +48,17 @@ export function Header({
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4">
       <div className="flex items-center gap-4">
+        {onMobileMenuToggle && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={onMobileMenuToggle}
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        )}
         {/* Breadcrumbs placeholder */}
         <h2 className="text-sm font-semibold text-foreground">TeamForge</h2>
       </div>
