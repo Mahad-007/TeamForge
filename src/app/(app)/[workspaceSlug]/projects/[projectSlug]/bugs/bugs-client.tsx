@@ -211,7 +211,7 @@ export function BugsClient({
           </DropdownMenu>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground shadow hover:bg-destructive/90">
+          <DialogTrigger render={<Button variant="destructive" />}>
             <Bug className="h-4 w-4" />
             Report Bug
           </DialogTrigger>

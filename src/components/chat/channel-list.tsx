@@ -130,7 +130,7 @@ export function ChannelList({
       <div className="flex items-center justify-between border-b px-3 py-3">
         <h2 className="text-sm font-semibold">Chat</h2>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent">
+          <DialogTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" />}>
             <Plus className="h-4 w-4" />
           </DialogTrigger>
           <DialogContent className="sm:max-w-sm">

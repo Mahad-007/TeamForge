@@ -38,7 +38,7 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
         const doneStatus = statuses[statuses.length - 1];
 
         const { count: total } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id);
-        const { count: done } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id).eq("status", doneStatus);
+        const { count: done } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id).ilike("status", doneStatus);
         totalCompleted += done ?? 0;
         projectStats.push({
           ...proj,
@@ -70,8 +70,7 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
       const { data: allTasks } = await supabase
         .from("tasks")
         .select("assignee_id, status, project:projects!tasks_project_id_fkey(settings), assignee:workspace_members!tasks_assignee_id_fkey(display_name)")
-        .eq("workspace_id", workspaceId)
-        .not("assignee_id", "is", null);
+        .eq("workspace_id", workspaceId);
 
       if (!allTasks || allTasks.length === 0) return [];
 
@@ -82,21 +81,23 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
       >();
 
       for (const task of allTasks) {
-        const memberId = task.assignee_id as string;
-        const name =
-          (task.assignee as { display_name: string | null } | null)
-            ?.display_name ?? "Unassigned";
+        const memberId = task.assignee_id as string | null;
+        const name = memberId
+          ? ((task.assignee as { display_name: string | null } | null)
+              ?.display_name ?? "Unknown")
+          : "Unassigned";
         const statuses = (task.project as Record<string, unknown>)?.settings
           ? ((task.project as Record<string, unknown>).settings as Record<string, unknown>)?.statuses as string[] ?? defaultStatuses
           : defaultStatuses;
         const doneStatus = statuses[statuses.length - 1];
 
-        if (!memberMap.has(memberId)) {
-          memberMap.set(memberId, { name, completed: 0, open: 0 });
+        const key = memberId ?? "__unassigned__";
+        if (!memberMap.has(key)) {
+          memberMap.set(key, { name, completed: 0, open: 0 });
         }
 
-        const entry = memberMap.get(memberId)!;
-        if (task.status === doneStatus) {
+        const entry = memberMap.get(key)!;
+        if (task.status.toLowerCase() === doneStatus.toLowerCase()) {
           entry.completed += 1;
         } else {
           entry.open += 1;

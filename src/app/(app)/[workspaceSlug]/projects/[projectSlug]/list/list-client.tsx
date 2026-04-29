@@ -287,27 +287,28 @@ export function ListClient({
               const isSelected = selectedTaskIds.has(task.id);
 
               return (
-                <div
+                <Link
                   key={task.id}
+                  href={`${base}/tasks/${task.identifier}`}
                   className={cn(
                     "grid cursor-pointer grid-cols-[40px_1fr_120px_120px_100px_100px] items-center gap-2 border-b px-4 py-2.5 text-sm transition-colors hover:bg-muted/30 last:border-0",
                     isSelected && "bg-muted/40"
                   )}
+                  onClick={() => setSelectedTaskId(task.id)}
                 >
                   <span
                     className="flex items-center justify-center"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                   >
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={() => toggleTask(task.id)}
                     />
                   </span>
-                  <Link
-                    href={`${base}/tasks/${task.identifier}`}
-                    className="flex items-center gap-2 min-w-0"
-                    onClick={() => setSelectedTaskId(task.id)}
-                  >
+                  <span className="flex items-center gap-2 min-w-0">
                     <span
                       className={cn(
                         "h-2 w-2 shrink-0 rounded-full",
@@ -318,18 +319,18 @@ export function ListClient({
                       {task.identifier}
                     </span>
                     <span className="truncate font-medium">{task.title}</span>
-                  </Link>
-                  <div onClick={() => setSelectedTaskId(task.id)}>
+                  </span>
+                  <div>
                     <Badge variant="secondary" className="text-xs">
                       {task.status}
                     </Badge>
                   </div>
-                  <div onClick={() => setSelectedTaskId(task.id)}>
+                  <div>
                     <Badge variant="outline" className="text-xs capitalize">
                       {task.priority}
                     </Badge>
                   </div>
-                  <div onClick={() => setSelectedTaskId(task.id)}>
+                  <div>
                     {assigneeName ? (
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-[10px]">
@@ -340,7 +341,7 @@ export function ListClient({
                       <span className="text-xs text-muted-foreground">--</span>
                     )}
                   </div>
-                  <div onClick={() => setSelectedTaskId(task.id)}>
+                  <div>
                     {task.due_date ? (
                       <span
                         className={cn(
@@ -360,7 +361,7 @@ export function ListClient({
                       <span className="text-xs text-muted-foreground">--</span>
                     )}
                   </div>
-                </div>
+                </Link>
               );
             })
           ) : (

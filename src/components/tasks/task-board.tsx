@@ -47,7 +47,7 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full min-w-0 flex-1 flex-col rounded-lg bg-muted/50",
+        "flex h-full w-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-muted/50",
         isOver && "ring-2 ring-primary/30"
       )}
     >
@@ -132,7 +132,7 @@ export function TaskBoard({
       onDragStart={(e) => setActiveId(e.active.id as string)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: "calc(100vh - 220px)" }}>
+      <div className="flex gap-3 pb-4" style={{ height: "calc(100vh - 220px)" }}>
         {statuses.map((status) => {
           const columnTasks = tasksByStatus.get(status) ?? [];
           return (

@@ -88,9 +88,7 @@ export function InviteModal({
         if (!nextOpen) resetForm();
       }}
     >
-      <DialogTrigger
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
-      >
+      <DialogTrigger render={<Button />}>
         <UserPlus className="h-4 w-4" />
         Invite Members
       </DialogTrigger>
