@@ -113,7 +113,7 @@ export function RoleDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div
@@ -147,7 +147,7 @@ export function RoleDetailModal({
         </DialogHeader>
 
         <ScrollArea className="flex-1 -mx-4 px-4" style={{ maxHeight: "calc(90vh - 180px)" }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 py-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 py-2">
             {permissionGroups.map((group) => {
               const enabledInGroup = group.permissions.filter(
                 (p) => localPerms[p]
