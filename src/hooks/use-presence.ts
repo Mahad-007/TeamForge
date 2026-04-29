@@ -18,9 +18,15 @@ export function usePresence(workspaceId: string, userId: string) {
   useEffect(() => {
     if (!workspaceId || !userId) return;
 
-    const channel = supabase.channel(`presence:${workspaceId}`, {
+    // Use a unique name per effect invocation to avoid stale channel name
+    // collisions when React re-runs effects before async cleanup completes.
+    const subId = Math.random().toString(36).slice(2);
+    const channel = supabase.channel(`presence:${workspaceId}:${subId}`, {
       config: { presence: { key: userId } },
     });
+    if (!channel) return;
+
+    let cleaned = false;
 
     channel
       .on("presence", { event: "sync" }, () => {
@@ -33,8 +39,8 @@ export function usePresence(workspaceId: string, userId: string) {
         });
         setOnlineUsers(users);
       })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
+      ?.subscribe(async (status) => {
+        if (status === "SUBSCRIBED" && !cleaned) {
           await channel.track({
             user_id: userId,
             status: "online",
@@ -46,14 +52,16 @@ export function usePresence(workspaceId: string, userId: string) {
     // Track away status after 5 min idle
     let idleTimeout: ReturnType<typeof setTimeout>;
     const resetIdle = () => {
+      if (cleaned) return;
       clearTimeout(idleTimeout);
-      channel.track({
+      channel?.track({
         user_id: userId,
         status: "online",
         last_seen: new Date().toISOString(),
       });
       idleTimeout = setTimeout(() => {
-        channel.track({
+        if (cleaned) return;
+        channel?.track({
           user_id: userId,
           status: "away",
           last_seen: new Date().toISOString(),
@@ -65,7 +73,8 @@ export function usePresence(workspaceId: string, userId: string) {
     window.addEventListener("keydown", resetIdle);
 
     return () => {
-      supabase.removeChannel(channel);
+      cleaned = true;
+      if (channel) supabase.removeChannel(channel);
       clearTimeout(idleTimeout);
       window.removeEventListener("mousemove", resetIdle);
       window.removeEventListener("keydown", resetIdle);
