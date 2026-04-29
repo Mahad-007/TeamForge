@@ -35,7 +35,7 @@ export function ChannelView({
 
   return (
     <div className="flex h-full">
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <ChannelHeader channelId={channelId} />
         <MessageList
           channelId={channelId}
