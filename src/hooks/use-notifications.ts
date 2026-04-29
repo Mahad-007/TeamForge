@@ -54,7 +54,7 @@ export function useNotifications(userId: string) {
           toast.info(notification.title);
         }
       )
-      .subscribe();
+      ?.subscribe();
 
     return () => {
       if (channel) supabase.removeChannel(channel);

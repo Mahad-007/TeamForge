@@ -32,7 +32,7 @@ export function useTyping(channelId: string, displayName: string) {
           setTypingUsers((prev) => prev.filter((n) => n !== name));
         }, 3000);
       })
-      .subscribe();
+      ?.subscribe();
 
     return () => {
       if (channel) supabase.removeChannel(channel);

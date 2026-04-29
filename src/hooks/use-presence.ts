@@ -39,7 +39,7 @@ export function usePresence(workspaceId: string, userId: string) {
         });
         setOnlineUsers(users);
       })
-      .subscribe(async (status) => {
+      ?.subscribe(async (status) => {
         if (status === "SUBSCRIBED" && !cleaned) {
           await channel.track({
             user_id: userId,
@@ -54,14 +54,14 @@ export function usePresence(workspaceId: string, userId: string) {
     const resetIdle = () => {
       if (cleaned) return;
       clearTimeout(idleTimeout);
-      channel.track({
+      channel?.track({
         user_id: userId,
         status: "online",
         last_seen: new Date().toISOString(),
       });
       idleTimeout = setTimeout(() => {
         if (cleaned) return;
-        channel.track({
+        channel?.track({
           user_id: userId,
           status: "away",
           last_seen: new Date().toISOString(),

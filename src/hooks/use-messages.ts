@@ -58,7 +58,7 @@ export function useMessages(channelId: string) {
           queryClient.invalidateQueries({ queryKey: ["messages", channelId] });
         }
       )
-      .subscribe();
+      ?.subscribe();
 
     return () => {
       if (channel) supabase.removeChannel(channel);
