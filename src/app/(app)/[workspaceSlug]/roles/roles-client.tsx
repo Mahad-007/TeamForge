@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { RoleDetailModal } from "@/components/roles/role-detail-modal";
 import { Shield, Users, Lock } from "lucide-react";
 import type { Permission } from "@/lib/permissions";
 
@@ -91,8 +93,9 @@ function countEnabledPermissions(perms: Record<string, boolean>): number {
   return Object.values(perms).filter(Boolean).length;
 }
 
-export function RolesClient({ workspaceId }: RolesClientProps) {
+export function RolesClient({ workspaceId, permissions }: RolesClientProps) {
   const supabase = createClient();
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
 
   const { data: roles, isLoading } = useQuery({
     queryKey: ["roles", workspaceId],
@@ -155,7 +158,11 @@ export function RolesClient({ workspaceId }: RolesClientProps) {
             const members = memberCounts?.[role.id] ?? 0;
 
             return (
-              <Card key={role.id} className="relative overflow-hidden">
+              <Card
+                key={role.id}
+                className="relative overflow-hidden cursor-pointer transition-colors hover:border-primary/40"
+                onClick={() => setSelectedRoleId(role.id)}
+              >
                 <div
                   className="absolute inset-x-0 top-0 h-1"
                   style={{ backgroundColor: role.color ?? "#6366f1" }}
@@ -234,6 +241,29 @@ export function RolesClient({ workspaceId }: RolesClientProps) {
           <p className="text-muted-foreground">No roles configured.</p>
         </div>
       )}
+
+      {selectedRoleId && roles && (() => {
+        const role = roles.find((r) => r.id === selectedRoleId);
+        if (!role) return null;
+        return (
+          <RoleDetailModal
+            open={true}
+            onOpenChange={(open) => { if (!open) setSelectedRoleId(null); }}
+            role={{
+              id: role.id,
+              name: role.name,
+              color: role.color,
+              permissions: (role.permissions ?? {}) as Record<string, boolean>,
+              is_system: role.is_system,
+              position: role.position,
+            }}
+            memberCount={memberCounts?.[role.id] ?? 0}
+            workspaceId={workspaceId}
+            canEdit={!!permissions["workspace.manage_roles"]}
+            permissionGroups={PERMISSION_GROUPS}
+          />
+        );
+      })()}
     </div>
   );
 }
