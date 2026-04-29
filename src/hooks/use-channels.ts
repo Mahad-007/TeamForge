@@ -73,21 +73,19 @@ export function useCreateChannel(workspaceId: string) {
       type: "public" | "private";
       created_by: string;
     }) => {
-      const { data, error } = await supabase
-        .from("channels")
-        .insert({ ...channel, workspace_id: workspaceId })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Auto-add creator as channel owner
-      await supabase.from("channel_members").insert({
-        channel_id: data.id,
-        member_id: channel.created_by,
-        role: "owner",
+      // Use RPC to atomically create channel + add owner in one transaction.
+      // Direct .insert().select().single() fails for private channels because
+      // the SELECT RLS policy requires channel_members entry, which doesn't
+      // exist yet at SELECT time.
+      const { data, error } = await supabase.rpc("create_channel_with_owner", {
+        p_workspace_id: workspaceId,
+        p_name: channel.name,
+        p_type: channel.type,
+        p_created_by: channel.created_by,
+        p_description: channel.description ?? null,
       });
 
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {

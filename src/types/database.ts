@@ -1458,6 +1458,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_channel_with_owner: {
+        Args: {
+          p_workspace_id: string
+          p_name: string
+          p_type: string
+          p_created_by: string
+          p_description?: string | null
+        }
+        Returns: Json
+      }
       has_permission: {
         Args: { perm: string; ws_id: string }
         Returns: boolean

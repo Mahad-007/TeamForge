@@ -40,6 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# claude code
+CLAUDE.md
+CLAUDE.local.md
+
 # internal docs
 TeamForge_PRD.md
 TeamForge_Product_Spec.md
