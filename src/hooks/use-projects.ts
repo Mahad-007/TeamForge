@@ -153,7 +153,22 @@ export function useWorkspaceMembers(workspaceId: string) {
         .eq("status", "active");
 
       if (error) throw error;
-      return data;
+
+      // workspace_members.display_name is often null — resolve from profiles
+      const userIds = data.map((m) => m.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", userIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) ?? []);
+
+      return data.map((m) => ({
+        ...m,
+        display_name:
+          m.display_name || profileMap.get(m.user_id)?.display_name || null,
+        avatar_url: profileMap.get(m.user_id)?.avatar_url || null,
+      }));
     },
     enabled: !!workspaceId,
   });
