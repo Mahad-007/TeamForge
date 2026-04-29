@@ -303,7 +303,8 @@ export function ListClient({
                       onCheckedChange={() => toggleTask(task.id)}
                     />
                   </span>
-                  <div
+                  <Link
+                    href={`${base}/tasks/${task.identifier}`}
                     className="flex items-center gap-2 min-w-0"
                     onClick={() => setSelectedTaskId(task.id)}
                   >
@@ -317,7 +318,7 @@ export function ListClient({
                       {task.identifier}
                     </span>
                     <span className="truncate font-medium">{task.title}</span>
-                  </div>
+                  </Link>
                   <div onClick={() => setSelectedTaskId(task.id)}>
                     <Badge variant="secondary" className="text-xs">
                       {task.status}
