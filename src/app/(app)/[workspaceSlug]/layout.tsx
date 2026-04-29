@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { AppShell } from "./app-shell";
 
@@ -25,7 +25,7 @@ export default async function WorkspaceLayout({
     .eq("slug", workspaceSlug)
     .single();
 
-  if (!workspace) redirect("/onboarding");
+  if (!workspace) notFound();
 
   // Verify membership
   const { data: membership } = await supabase
@@ -36,7 +36,7 @@ export default async function WorkspaceLayout({
     .eq("status", "active")
     .single();
 
-  if (!membership) redirect("/onboarding");
+  if (!membership) notFound();
 
   // Fetch profile
   const { data: profile } = await supabase

@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Refresh session and get user
-  const { user, supabaseResponse } = await updateSession(request);
+  const { user, supabaseResponse, supabase } = await updateSession(request);
 
   // No valid session — redirect to login
   if (!user) {
@@ -35,10 +35,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Root path — redirect to onboarding or last workspace
+  // Root path — redirect to workspace dashboard or onboarding
   if (pathname === "/") {
+    const { data: memberships } = await supabase
+      .from("workspace_members")
+      .select("workspace:workspaces(slug)")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .limit(1);
+
     const url = request.nextUrl.clone();
-    url.pathname = "/onboarding";
+    if (memberships && memberships.length > 0) {
+      const workspace = memberships[0].workspace as unknown as { slug: string };
+      url.pathname = `/${workspace.slug}/dashboard`;
+    } else {
+      url.pathname = "/onboarding";
+    }
     return NextResponse.redirect(url);
   }
 
