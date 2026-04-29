@@ -214,7 +214,9 @@ export function TaskDetailPanel({
                 }
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Unassigned" />
+                  {task.assignee_id
+                    ? members?.find((m) => m.id === task.assignee_id)?.display_name ?? "Unknown"
+                    : "Unassigned"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>

@@ -217,7 +217,15 @@ export function MembersClient({
                     }}
                   >
                     <SelectTrigger size="sm">
-                      <SelectValue placeholder="Role" />
+                      <span className="flex items-center gap-1.5">
+                        {role && (
+                          <span
+                            className="inline-block h-2 w-2 rounded-full shrink-0"
+                            style={{ backgroundColor: role.color }}
+                          />
+                        )}
+                        {role?.name ?? "Select role"}
+                      </span>
                     </SelectTrigger>
                     <SelectContent>
                       {roles.map((r) => (

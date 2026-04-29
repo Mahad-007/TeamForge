@@ -591,7 +591,9 @@ export function ProjectSettingsClient({
               onValueChange={(v) => setLeadId(v === "none" ? null : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a lead..." />
+                {leadId && leadId !== "none"
+                  ? members?.find((m) => m.id === leadId)?.display_name ?? "Unknown"
+                  : "No lead"}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No lead</SelectItem>

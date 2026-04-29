@@ -111,7 +111,15 @@ export function InviteModal({
               onValueChange={(v) => v && setSelectedRoleId(v)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a role" />
+                {(() => {
+                  const r = roles.find((r) => r.id === selectedRoleId);
+                  return r ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                      {r.name}
+                    </span>
+                  ) : "Select a role";
+                })()}
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (

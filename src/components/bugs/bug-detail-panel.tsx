@@ -198,7 +198,11 @@ export function BugDetailPanel({
                 value={bug.assignee_id ?? "unassigned"}
                 onValueChange={(v) => handleFieldUpdate("assignee_id", v === "unassigned" ? null : v)}
               >
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                <SelectTrigger className="mt-1">
+                  {bug.assignee_id
+                    ? members?.find((m) => m.id === bug.assignee_id)?.display_name ?? "Unknown"
+                    : "Unassigned"}
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {members?.map((m) => (

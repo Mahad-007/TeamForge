@@ -90,7 +90,9 @@ export function FilterBar({
         }
       >
         <SelectTrigger size="sm">
-          <SelectValue placeholder="Assignee" />
+          {filters.assignee_id
+            ? members.find((m) => m.id === filters.assignee_id)?.display_name ?? "Unknown"
+            : "Assignee"}
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All assignees</SelectItem>
