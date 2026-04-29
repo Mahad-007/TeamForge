@@ -31,7 +31,10 @@ export function AppShell({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar workspaceSlug={workspaceSlug} workspaceName={workspaceName} />
+      {/* Desktop sidebar - hidden on mobile */}
+      <div className="hidden md:flex">
+        <Sidebar workspaceSlug={workspaceSlug} workspaceName={workspaceName} />
+      </div>
       <div className="flex w-full flex-1 flex-col overflow-hidden">
         <Header
           userDisplayName={userDisplayName}
