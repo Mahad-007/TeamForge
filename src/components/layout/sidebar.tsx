@@ -10,6 +10,7 @@ import {
   BookOpen,
   Users,
   Shield,
+  BarChart3,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -35,6 +36,7 @@ const navItems = [
 const managementItems = [
   { label: "Members", icon: Users, href: "/members" },
   { label: "Roles", icon: Shield, href: "/roles" },
+  { label: "Analytics", icon: BarChart3, href: "/analytics" },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 

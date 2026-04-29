@@ -102,7 +102,7 @@ export function ProjectForm({
               id="proj-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="API Backend"
+              placeholder="e.g. Marketing Site"
               required
             />
           </div>
@@ -115,7 +115,7 @@ export function ProjectForm({
                 setSlug(slugify(e.target.value));
                 setSlugEdited(true);
               }}
-              placeholder="api-backend"
+              placeholder="e.g. marketing-site"
               required
             />
           </div>
