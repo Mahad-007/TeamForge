@@ -34,50 +34,56 @@ export function FilterBar({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Status filter */}
-      <Select
-        value={filters.status ?? "all"}
-        onValueChange={(val) =>
-          onFilterChange({
-            ...filters,
-            status: !val || val === "all" ? undefined : val,
-          })
-        }
-      >
-        <SelectTrigger size="sm">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
-          {statuses.map((s) => (
-            <SelectItem key={s} value={s}>
-              {s}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Status:</span>
+        <Select
+          value={filters.status ?? "all"}
+          onValueChange={(val) =>
+            onFilterChange({
+              ...filters,
+              status: !val || val === "all" ? undefined : val,
+            })
+          }
+        >
+          <SelectTrigger size="sm">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            {statuses.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Priority filter */}
-      <Select
-        value={filters.priority ?? "all"}
-        onValueChange={(val) =>
-          onFilterChange({
-            ...filters,
-            priority: !val || val === "all" ? undefined : val,
-          })
-        }
-      >
-        <SelectTrigger size="sm">
-          <SelectValue placeholder="Priority" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All priorities</SelectItem>
-          {TASK_PRIORITIES.map((p) => (
-            <SelectItem key={p} value={p}>
-              <span className="capitalize">{p}</span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Priority:</span>
+        <Select
+          value={filters.priority ?? "all"}
+          onValueChange={(val) =>
+            onFilterChange({
+              ...filters,
+              priority: !val || val === "all" ? undefined : val,
+            })
+          }
+        >
+          <SelectTrigger size="sm">
+            <SelectValue placeholder="Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All priorities</SelectItem>
+            {TASK_PRIORITIES.map((p) => (
+              <SelectItem key={p} value={p}>
+                <span className="capitalize">{p}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Assignee filter */}
       <Select
