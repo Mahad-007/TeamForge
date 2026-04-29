@@ -47,7 +47,7 @@ export function Sidebar({ workspaceSlug, workspaceName }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-200",
+        "hidden h-screen flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-200 md:flex",
         collapsed ? "w-16" : "w-64"
       )}
     >
