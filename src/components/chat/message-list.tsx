@@ -45,7 +45,7 @@ export function MessageList({ channelId, currentMemberId }: MessageListProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 min-h-0 overflow-y-auto">
       {messages && messages.length > 0 ? (
         <div className="py-4">
           {messages.map((message) => (
