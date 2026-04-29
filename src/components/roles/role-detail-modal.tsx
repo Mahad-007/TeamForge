@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Shield, Users, Lock, Check } from "lucide-react";
 import { toast } from "sonner";
 import type { Permission } from "@/lib/permissions";
@@ -48,20 +47,6 @@ function formatPermission(perm: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatGroupDescription(label: string): string {
-  const descriptions: Record<string, string> = {
-    Workspace: "Manage workspace settings, members, and billing",
-    Projects: "Create, manage, and view projects",
-    Tasks: "Create, assign, and manage tasks",
-    Bugs: "Create, assign, and manage bug reports",
-    Chat: "Create channels and manage messages",
-    Wiki: "Create, edit, and manage wiki pages",
-    Code: "Manage repositories and trigger scans",
-    AI: "Use the AI assistant and view analytics",
-  };
-  return descriptions[label] ?? "";
-}
-
 export function RoleDetailModal({
   open,
   onOpenChange,
@@ -73,10 +58,11 @@ export function RoleDetailModal({
 }: RoleDetailModalProps) {
   const updateRole = useUpdateRole(workspaceId);
   const [localPerms, setLocalPerms] = useState<Record<string, boolean>>({});
-  const isSystem = role.is_system === true;
-  const editable = canEdit && !isSystem;
 
-  // Sync local state when role changes
+  // Only the Owner role (position 0) is truly locked. All other roles are editable.
+  const isOwnerRole = role.position === 0;
+  const editable = canEdit && !isOwnerRole;
+
   useEffect(() => {
     setLocalPerms({ ...role.permissions });
   }, [role.id, role.permissions]);
@@ -127,19 +113,19 @@ export function RoleDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-lg"
+              className="flex h-10 w-10 items-center justify-center rounded-lg shrink-0"
               style={{ backgroundColor: `${color}20` }}
             >
               <Shield className="h-5 w-5" style={{ color }} />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <DialogTitle>{role.name}</DialogTitle>
-                {isSystem && (
+                {role.is_system && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                     <Lock className="h-2.5 w-2.5 mr-0.5" />
                     System
@@ -151,16 +137,17 @@ export function RoleDetailModal({
                   <Users className="h-3 w-3" />
                   {memberCount} member{memberCount !== 1 ? "s" : ""}
                 </span>
-                <span>
-                  {totalEnabled}/{totalPerms} permissions
-                </span>
+                <span>{totalEnabled}/{totalPerms} permissions enabled</span>
+                {isOwnerRole && (
+                  <span className="text-amber-500">Read-only</span>
+                )}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 -mx-4 px-4 max-h-[55vh]">
-          <div className="space-y-5 py-2">
+        <ScrollArea className="flex-1 -mx-4 px-4" style={{ maxHeight: "calc(90vh - 180px)" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 py-2">
             {permissionGroups.map((group) => {
               const enabledInGroup = group.permissions.filter(
                 (p) => localPerms[p]
@@ -169,23 +156,19 @@ export function RoleDetailModal({
               const someEnabled = enabledInGroup > 0 && !allEnabled;
 
               return (
-                <div key={group.label}>
-                  <div className="flex items-center justify-between mb-1">
+                <div
+                  key={group.label}
+                  className="rounded-lg border bg-card p-3"
+                >
+                  <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => toggleGroup(group)}
-                        disabled={!editable}
-                        className="flex items-center gap-2 disabled:cursor-default"
+                      <h4 className="text-sm font-semibold">{group.label}</h4>
+                      <Badge
+                        variant={allEnabled ? "default" : someEnabled ? "secondary" : "outline"}
+                        className="text-[10px] px-1.5 py-0"
                       >
-                        <h4 className="text-sm font-semibold">{group.label}</h4>
-                        <Badge
-                          variant={allEnabled ? "default" : someEnabled ? "secondary" : "outline"}
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {enabledInGroup}/{group.permissions.length}
-                        </Badge>
-                      </button>
+                        {enabledInGroup}/{group.permissions.length}
+                      </Badge>
                     </div>
                     {editable && (
                       <button
@@ -197,55 +180,59 @@ export function RoleDetailModal({
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {formatGroupDescription(group.label)}
-                  </p>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {group.permissions.map((perm) => {
                       const enabled = !!localPerms[perm];
                       const changed = enabled !== !!role.permissions[perm];
 
                       return (
-                        <div
+                        <label
                           key={perm}
-                          className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50 transition-colors"
+                          className={`flex items-center justify-between rounded-md px-2 py-1.5 transition-colors ${
+                            editable ? "cursor-pointer hover:bg-muted/50" : ""
+                          }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">
-                              {formatPermission(perm)}
-                            </span>
+                          <span className="flex items-center gap-1.5 text-sm">
+                            {formatPermission(perm)}
                             {changed && (
                               <span className="text-[10px] text-primary font-medium">
-                                modified
+                                changed
                               </span>
                             )}
-                          </div>
+                          </span>
                           <Switch
                             checked={enabled}
                             onCheckedChange={() => togglePermission(perm)}
                             disabled={!editable}
                             size="sm"
                           />
-                        </div>
+                        </label>
                       );
                     })}
                   </div>
-
-                  <Separator className="mt-4" />
                 </div>
               );
             })}
           </div>
         </ScrollArea>
 
-        {editable && (
-          <DialogFooter>
-            {hasChanges && (
-              <Button variant="ghost" size="sm" onClick={handleReset}>
-                Reset
-              </Button>
-            )}
+        <DialogFooter>
+          {isOwnerRole ? (
+            <p className="text-xs text-muted-foreground mr-auto">
+              The Owner role cannot be modified
+            </p>
+          ) : !canEdit ? (
+            <p className="text-xs text-muted-foreground mr-auto">
+              You need the Manage Roles permission to edit
+            </p>
+          ) : null}
+          {editable && hasChanges && (
+            <Button variant="ghost" size="sm" onClick={handleReset}>
+              Reset
+            </Button>
+          )}
+          {editable && (
             <Button
               size="sm"
               onClick={handleSave}
@@ -258,14 +245,8 @@ export function RoleDetailModal({
                 </>
               )}
             </Button>
-          </DialogFooter>
-        )}
-
-        {!editable && isSystem && (
-          <div className="text-xs text-muted-foreground text-center py-2">
-            System roles cannot be modified
-          </div>
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
