@@ -160,11 +160,9 @@ export function IntegrationsClient({
               </div>
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
+              <DialogTrigger render={<Button size="sm" />}>
                   <Plus className="h-4 w-4 mr-1.5" />
                   Add Webhook
-                </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
