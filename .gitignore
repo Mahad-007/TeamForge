@@ -40,9 +40,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# git worktrees
+.claude/worktrees/
+
 # claude code
 CLAUDE.md
 CLAUDE.local.md
+REVIEW.md
 
 # internal docs
 TeamForge_PRD.md
