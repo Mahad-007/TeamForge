@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+} from "@/lib/supabase/cached-queries";
 import { ChatLayoutClient } from "./chat-layout-client";
 
 export default async function ChatLayout({
@@ -10,18 +14,14 @@ export default async function ChatLayout({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
-  const supabase = await createServerSupabaseClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
   if (!workspace) redirect("/onboarding");
 
+  const supabase = await createServerSupabaseClient();
   const { data: member } = await supabase
     .from("workspace_members")
     .select("id, display_name")

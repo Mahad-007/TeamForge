@@ -1,5 +1,8 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+} from "@/lib/supabase/cached-queries";
 import { SettingsClient } from "./settings-client";
 
 export const metadata = { title: "Settings - TeamForge" };
@@ -10,18 +13,11 @@ export default async function SettingsPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
-  const supabase = await createServerSupabaseClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("*")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
   if (!workspace) redirect("/onboarding");
 
   const isOwner = workspace.owner_id === user.id;

@@ -1,4 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+} from "@/lib/supabase/cached-queries";
 import { RolesClient } from "./roles-client";
 
 export const metadata = { title: "Roles - TeamForge" };
@@ -9,18 +13,11 @@ export default async function RolesPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
+
+  const user = await getAuthUser();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
+
   const supabase = await createServerSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
-
   const { data: currentMember } = await supabase
     .from("workspace_members")
     .select("id, role:roles(permissions)")
