@@ -1,4 +1,3 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   getAuthUser,
   getWorkspaceBySlug,
@@ -19,16 +18,9 @@ export default async function DashboardPage({
   const workspace = await getWorkspaceBySlug(workspaceSlug);
   const member = await getWorkspaceMember(workspace!.id, user!.id);
 
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", user!.id)
-    .maybeSingle();
-
   return (
     <DashboardClient
-      displayName={profile?.display_name ?? "there"}
+      displayName={workspace!.name}
       workspaceId={workspace!.id}
       memberId={member!.id}
     />

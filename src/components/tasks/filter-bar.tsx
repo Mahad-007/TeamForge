@@ -86,20 +86,20 @@ export function FilterBar({
       </div>
 
       {/* Assignee filter */}
-      <Select
-        value={filters.assignee_id ?? "all"}
-        onValueChange={(val) =>
-          onFilterChange({
-            ...filters,
-            assignee_id: !val || val === "all" ? undefined : val,
-          })
-        }
-      >
-        <SelectTrigger size="sm">
-          {filters.assignee_id
-            ? members.find((m) => m.id === filters.assignee_id)?.display_name ?? "Unknown"
-            : "Assignee"}
-        </SelectTrigger>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Assignee:</span>
+        <Select
+          value={filters.assignee_id ?? "all"}
+          onValueChange={(val) =>
+            onFilterChange({
+              ...filters,
+              assignee_id: !val || val === "all" ? undefined : val,
+            })
+          }
+        >
+          <SelectTrigger size="sm">
+            <SelectValue placeholder="Assignee" />
+          </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All assignees</SelectItem>
           {members.map((m) => (
@@ -108,7 +108,8 @@ export function FilterBar({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+        </Select>
+      </div>
 
       {hasActiveFilters && (
         <Button

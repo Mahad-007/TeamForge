@@ -86,7 +86,10 @@ export function ProjectForm({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => {
+      setOpen(v);
+      if (v) { setName(""); setSlug(""); setSlugEdited(false); setDescription(""); setPriority("medium"); setError(null); }
+    }}>
       <DialogTrigger render={<Button />}>
         <Plus className="h-4 w-4" />
         New Project
@@ -95,7 +98,7 @@ export function ProjectForm({
         <DialogHeader>
           <DialogTitle>Create project</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
           <div className="space-y-2">
             <Label htmlFor="proj-name">Name</Label>
             <Input
@@ -104,6 +107,7 @@ export function ProjectForm({
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="e.g. Marketing Site"
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">

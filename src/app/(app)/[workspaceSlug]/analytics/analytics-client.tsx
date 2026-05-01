@@ -29,22 +29,28 @@ export function AnalyticsClient({ workspaceId }: AnalyticsClientProps) {
           supabase.from("workspace_members").select("id, display_name", { count: "exact" }).eq("workspace_id", workspaceId).eq("status", "active"),
         ]);
 
-      // Per-project task counts — use each project's final status as "done"
+      // Fetch all tasks to compute per-project completion in JS
       const defaultStatuses = ["Backlog", "Todo", "In Progress", "Review", "Done"];
+      const { data: allTaskRows } = await supabase
+        .from("tasks")
+        .select("project_id, status")
+        .eq("workspace_id", workspaceId);
+
       const projectStats = [];
       let totalCompleted = 0;
       for (const proj of projects.data ?? []) {
         const statuses = (proj.settings as Record<string, unknown>)?.statuses as string[] ?? defaultStatuses;
-        const doneStatus = statuses[statuses.length - 1];
+        const doneStatus = statuses[statuses.length - 1].toLowerCase();
 
-        const { count: total } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id);
-        const { count: done } = await supabase.from("tasks").select("*", { count: "exact", head: true }).eq("project_id", proj.id).ilike("status", doneStatus);
-        totalCompleted += done ?? 0;
+        const projectTasks = (allTaskRows ?? []).filter((t) => t.project_id === proj.id);
+        const total = projectTasks.length;
+        const done = projectTasks.filter((t) => t.status.toLowerCase() === doneStatus).length;
+        totalCompleted += done;
         projectStats.push({
           ...proj,
-          totalTasks: total ?? 0,
-          completedTasks: done ?? 0,
-          completion: total && total > 0 ? Math.round(((done ?? 0) / total) * 100) : 0,
+          totalTasks: total,
+          completedTasks: done,
+          completion: total > 0 ? Math.round((done / total) * 100) : 0,
         });
       }
 
