@@ -58,11 +58,33 @@ export function BugDetailPanel({
       const { data, error } = await supabase
         .from("bugs")
         .select(
-          "*, assignee:workspace_members!bugs_assignee_id_fkey(id, display_name), reporter:workspace_members!bugs_reporter_id_fkey(id, display_name)"
+          "*, assignee:workspace_members!bugs_assignee_id_fkey(id, display_name, user_id), reporter:workspace_members!bugs_reporter_id_fkey(id, display_name, user_id)"
         )
         .eq("id", bugId!)
         .single();
       if (error) throw error;
+
+      // Resolve display names from profiles
+      const userIdsToResolve: string[] = [];
+      const assignee = data.assignee as { id: string; user_id: string; display_name: string | null } | null;
+      const reporter = data.reporter as { id: string; user_id: string; display_name: string | null } | null;
+      if (assignee && !assignee.display_name) userIdsToResolve.push(assignee.user_id);
+      if (reporter && !reporter.display_name) userIdsToResolve.push(reporter.user_id);
+
+      if (userIdsToResolve.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", [...new Set(userIdsToResolve)]);
+        const profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) ?? []);
+
+        return {
+          ...data,
+          assignee: assignee ? { ...assignee, display_name: assignee.display_name ?? profileMap.get(assignee.user_id) ?? null } : null,
+          reporter: reporter ? { ...reporter, display_name: reporter.display_name ?? profileMap.get(reporter.user_id) ?? null } : null,
+        };
+      }
+
       return data;
     },
     enabled: !!bugId,
@@ -73,11 +95,26 @@ export function BugDetailPanel({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("workspace_members")
-        .select("id, display_name")
+        .select("id, display_name, user_id")
         .eq("workspace_id", workspaceId)
         .eq("status", "active");
       if (error) throw error;
-      return data;
+
+      // Resolve display names from profiles
+      const nullNameIds = data.filter((m) => !m.display_name).map((m) => m.user_id);
+      let profileMap = new Map<string, string>();
+      if (nullNameIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", nullNameIds);
+        profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) ?? []);
+      }
+
+      return data.map((m) => ({
+        ...m,
+        display_name: m.display_name || profileMap.get(m.user_id) || null,
+      }));
     },
     enabled: !!workspaceId,
   });

@@ -16,11 +16,21 @@ export function ActivityFeedWidget({ workspaceId }: ActivityFeedWidgetProps) {
   const { data: activities, isLoading } = useQuery({
     queryKey: ["workspace-activity", workspaceId],
     queryFn: async () => {
+      // Get tasks in this workspace to filter activity
+      const { data: workspaceTasks } = await supabase
+        .from("tasks")
+        .select("id")
+        .eq("workspace_id", workspaceId);
+
+      const taskIds = workspaceTasks?.map((t) => t.id) ?? [];
+      if (taskIds.length === 0) return [];
+
       const { data, error } = await supabase
         .from("task_activity_log")
         .select(
           "id, action, old_value, new_value, created_at, actor:workspace_members!task_activity_log_actor_id_fkey(display_name), task:tasks(identifier, title)"
         )
+        .in("task_id", taskIds)
         .order("created_at", { ascending: false })
         .limit(15);
 

@@ -62,8 +62,8 @@ export function CreateWorkspaceForm() {
       return;
     }
 
-    router.push(`/${slug}/dashboard`);
-    router.refresh();
+    // Use full-page navigation to ensure server components pick up the new workspace
+    window.location.href = `/${slug}/dashboard`;
   }
 
   return (

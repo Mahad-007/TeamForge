@@ -1,5 +1,10 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+  getWorkspaceMember,
+} from "@/lib/supabase/cached-queries";
 import { BoardClient } from "./board-client";
 
 export const metadata = { title: "Board - TeamForge" };
@@ -10,20 +15,14 @@ export default async function BoardPage({
   params: Promise<{ workspaceSlug: string; projectSlug: string }>;
 }) {
   const { workspaceSlug, projectSlug } = await params;
-  const supabase = await createServerSupabaseClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
   if (!workspace) redirect("/onboarding");
 
+  const supabase = await createServerSupabaseClient();
   const { data: project } = await supabase
     .from("projects")
     .select("id, name, slug, settings")
@@ -32,12 +31,7 @@ export default async function BoardPage({
     .maybeSingle();
   if (!project) redirect(`/${workspaceSlug}/projects`);
 
-  const { data: member } = await supabase
-    .from("workspace_members")
-    .select("id")
-    .eq("workspace_id", workspace.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const member = await getWorkspaceMember(workspace.id, user.id);
 
   const settings = project.settings as { statuses?: string[] } | null;
   const statuses = settings?.statuses ?? [

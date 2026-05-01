@@ -24,6 +24,33 @@ export function useTasks(projectId: string, filters?: { status?: string; assigne
 
       const { data, error } = await query;
       if (error) throw error;
+
+      // Resolve display names from profiles where workspace_members.display_name is null
+      const assigneeUserIds = data
+        .map((t) => (t.assignee as { id: string; user_id: string; display_name: string | null } | null))
+        .filter((a): a is { id: string; user_id: string; display_name: string | null } => !!a && !a.display_name)
+        .map((a) => a.user_id);
+
+      if (assigneeUserIds.length > 0) {
+        const uniqueIds = [...new Set(assigneeUserIds)];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", uniqueIds);
+        const profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) ?? []);
+
+        return data.map((t) => {
+          const assignee = t.assignee as { id: string; user_id: string; display_name: string | null } | null;
+          if (assignee && !assignee.display_name) {
+            return {
+              ...t,
+              assignee: { ...assignee, display_name: profileMap.get(assignee.user_id) ?? null },
+            };
+          }
+          return t;
+        });
+      }
+
       return data;
     },
     enabled: !!projectId,

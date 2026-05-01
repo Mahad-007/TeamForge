@@ -1,4 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+} from "@/lib/supabase/cached-queries";
 import { MembersClient } from "./members-client";
 
 export const metadata = { title: "Members - TeamForge" };
@@ -9,18 +13,12 @@ export default async function MembersPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
+
+  const user = await getAuthUser();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
+
+  // Need role permissions, so can't use the basic cached member query
   const supabase = await createServerSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
-
   const { data: currentMember } = await supabase
     .from("workspace_members")
     .select("id, role:roles(permissions)")

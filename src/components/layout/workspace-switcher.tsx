@@ -55,7 +55,7 @@ export function WorkspaceSwitcher({
           );
         })}
         <DropdownMenuItem>
-          <Link href="/onboarding" className="text-muted-foreground">
+          <Link href="/onboarding?new=true" className="text-muted-foreground">
             <Plus className="mr-2 h-4 w-4" />
             Create workspace
           </Link>

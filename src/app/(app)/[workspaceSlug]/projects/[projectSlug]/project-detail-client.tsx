@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TaskForm } from "@/components/tasks/task-form";
 import {
   ArrowLeft,
   Calendar,
@@ -13,6 +14,7 @@ import {
   Bug,
   KanbanSquare,
   List,
+  Plus,
   Settings,
 } from "lucide-react";
 
@@ -41,6 +43,14 @@ export function ProjectDetailClient({
 }: ProjectDetailClientProps) {
   const supabase = createClient();
   const base = `/${workspaceSlug}/projects/${project.slug}`;
+  const settings = project.settings as { statuses?: string[] } | null;
+  const statuses = settings?.statuses ?? [
+    "Backlog",
+    "Todo",
+    "In Progress",
+    "Review",
+    "Done",
+  ];
 
   const { data: stats } = useQuery({
     queryKey: ["project-stats", project.id],
@@ -99,6 +109,12 @@ export function ProjectDetailClient({
           {project.priority && (
             <Badge variant="outline">{project.priority}</Badge>
           )}
+          <Link href={`${base}/board`}>
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Task
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -142,6 +158,22 @@ export function ProjectDetailClient({
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Add Task */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Quick Add Task</CardTitle>
+        </CardHeader>
+        <CardContent className="pb-3">
+          <TaskForm
+            projectId={project.id}
+            workspaceId={workspaceId}
+            currentMemberId={currentMemberId}
+            defaultStatus={statuses[0]}
+            variant="inline"
+          />
+        </CardContent>
+      </Card>
 
       {/* Quick Navigation */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { Header } from "@/components/layout/header";
-import { AIChatPanel } from "@/components/ai/ai-chat-panel";
 import { FloatingAIButton } from "@/components/ai/floating-ai-button";
-import { CommandPalette } from "@/components/layout/command-palette";
+
+// Lazy load heavy components that are not immediately visible
+const AIChatPanel = dynamic(
+  () => import("@/components/ai/ai-chat-panel").then((mod) => ({ default: mod.AIChatPanel })),
+  { ssr: false }
+);
+const CommandPalette = dynamic(
+  () => import("@/components/layout/command-palette").then((mod) => ({ default: mod.CommandPalette })),
+  { ssr: false }
+);
 
 interface AppShellProps {
   workspaceSlug: string;

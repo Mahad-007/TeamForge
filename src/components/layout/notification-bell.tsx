@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useNotifications, useMarkNotificationRead, useMarkAllRead } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,11 @@ import { cn } from "@/lib/utils";
 export function NotificationBell() {
   const [userId, setUserId] = useState<string | null>(null);
   const supabase = createClient();
+  const didFetchUser = useRef(false);
 
   useEffect(() => {
+    if (didFetchUser.current) return;
+    didFetchUser.current = true;
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });

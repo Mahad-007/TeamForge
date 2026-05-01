@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,9 @@ import {
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 export function SignupForm() {
+  const searchParams = useSearchParams();
+  const inviteCode = searchParams.get("invite");
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,13 +39,18 @@ export function SignupForm() {
       return;
     }
 
+    // If there's an invite code, redirect to the invite page after verification
+    const redirectPath = inviteCode
+      ? `/invite/${encodeURIComponent(inviteCode)}`
+      : "/";
+
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectPath)}`,
       },
     });
 
@@ -139,7 +148,10 @@ export function SignupForm() {
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link
+            href={inviteCode ? `/login?invite=${encodeURIComponent(inviteCode)}` : "/login"}
+            className="text-primary hover:underline"
+          >
             Sign in
           </Link>
         </p>

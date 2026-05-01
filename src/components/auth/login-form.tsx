@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,10 @@ import { Loader2 } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
+  const inviteCode = searchParams.get("invite");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +45,15 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/");
-    router.refresh();
+    // Use full-page navigation to ensure session cookies are properly applied.
+    // router.push() + router.refresh() can cause race conditions with auth state.
+    if (inviteCode) {
+      window.location.href = `/invite/${encodeURIComponent(inviteCode)}`;
+    } else if (redirectTo) {
+      window.location.href = redirectTo;
+    } else {
+      window.location.href = "/";
+    }
   }
 
   return (
@@ -100,7 +111,10 @@ export function LoginForm() {
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link
+            href={inviteCode ? `/signup?invite=${encodeURIComponent(inviteCode)}` : "/signup"}
+            className="text-primary hover:underline"
+          >
             Sign up
           </Link>
         </p>

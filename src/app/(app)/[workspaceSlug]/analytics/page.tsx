@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getAuthUser,
+  getWorkspaceBySlug,
+} from "@/lib/supabase/cached-queries";
 import { AnalyticsClient } from "./analytics-client";
 
 export const metadata = { title: "Analytics - TeamForge" };
@@ -10,16 +13,11 @@ export default async function AnalyticsPage({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
-  const supabase = await createServerSupabaseClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect("/login");
 
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("slug", workspaceSlug)
-    .maybeSingle();
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
   if (!workspace) redirect("/onboarding");
 
   return <AnalyticsClient workspaceId={workspace.id} />;

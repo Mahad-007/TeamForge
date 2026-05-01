@@ -83,8 +83,8 @@ export function JoinWorkspaceForm() {
       .eq("id", invite.id);
 
     const workspace = invite.workspace as unknown as { slug: string };
-    router.push(`/${workspace.slug}/dashboard`);
-    router.refresh();
+    // Use full-page navigation to ensure server components pick up the new membership
+    window.location.href = `/${workspace.slug}/dashboard`;
   }
 
   return (
