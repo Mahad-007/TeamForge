@@ -16,7 +16,8 @@ export function useTasks(projectId: string, filters?: { status?: string; assigne
         )
         .eq("project_id", projectId)
         .is("parent_task_id", null)
-        .order("sort_order", { ascending: true });
+        .order("sort_order", { ascending: true })
+        .limit(200);
 
       if (filters?.status) query = query.eq("status", filters.status);
       if (filters?.assignee_id) query = query.eq("assignee_id", filters.assignee_id);

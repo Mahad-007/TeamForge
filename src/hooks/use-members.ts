@@ -3,6 +3,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Resolves display_name for workspace members by falling back to the profiles table.
+ * Shared helper to avoid N+1 profile queries across hooks.
+ */
+async function resolveDisplayNames(
+  supabase: ReturnType<typeof createClient>,
+  members: { user_id: string; display_name: string | null }[]
+) {
+  const nullNameIds = members.filter((m) => !m.display_name).map((m) => m.user_id);
+  if (nullNameIds.length === 0) return new Map<string, { display_name: string | null; avatar_url: string | null }>();
+
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url")
+    .in("id", [...new Set(nullNameIds)]);
+
+  return new Map(profiles?.map((p) => [p.id, p]) ?? []);
+}
+
 export function useWorkspaceMembersWithProfiles(workspaceId: string) {
   const supabase = createClient();
 
@@ -20,20 +39,41 @@ export function useWorkspaceMembersWithProfiles(workspaceId: string) {
 
       if (error) throw error;
 
-      // workspace_members.display_name is often null — resolve from profiles
-      const userIds = data.map((m) => m.user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .in("id", userIds);
-
-      const profileMap = new Map(profiles?.map((p) => [p.id, p]) ?? []);
+      const profileMap = await resolveDisplayNames(supabase, data);
 
       return data.map((m) => ({
         ...m,
         display_name:
           m.display_name || profileMap.get(m.user_id)?.display_name || null,
         avatar_url: profileMap.get(m.user_id)?.avatar_url || null,
+      }));
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+/**
+ * Lightweight members list for select dropdowns (task/bug detail panels).
+ * Returns id + resolved display_name only.
+ */
+export function useWorkspaceMembersForSelect(workspaceId: string) {
+  const supabase = createClient();
+
+  return useQuery({
+    queryKey: ["workspace-members-select", workspaceId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workspace_members")
+        .select("id, display_name, user_id")
+        .eq("workspace_id", workspaceId)
+        .eq("status", "active");
+      if (error) throw error;
+
+      const profileMap = await resolveDisplayNames(supabase, data);
+
+      return data.map((m) => ({
+        ...m,
+        display_name: m.display_name || profileMap.get(m.user_id)?.display_name || null,
       }));
     },
     enabled: !!workspaceId,

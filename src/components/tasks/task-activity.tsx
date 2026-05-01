@@ -30,11 +30,11 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 function formatAction(action: string, oldValue: string | null, newValue: string | null): string {
   switch (action) {
     case "status_changed":
-      return `changed status from ${oldValue ?? "none"} to ${newValue ?? "unknown"}`;
+      return `changed status from ${oldValue ?? "none"} to ${newValue ?? "none"}`;
     case "assigned":
       return newValue ? `assigned to ${newValue}` : "removed assignee";
     case "priority_changed":
-      return `changed priority from ${oldValue ?? "none"} to ${newValue ?? "unknown"}`;
+      return `changed priority from ${oldValue ?? "none"} to ${newValue ?? "none"}`;
     case "description_edited":
       return "updated the description";
     case "comment_added":

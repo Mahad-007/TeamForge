@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useUpdateBug } from "@/hooks/use-bugs";
+import { useWorkspaceMembersForSelect } from "@/hooks/use-members";
 import {
   Sheet,
   SheetContent,
@@ -90,34 +91,7 @@ export function BugDetailPanel({
     enabled: !!bugId,
   });
 
-  const { data: members } = useQuery({
-    queryKey: ["workspace-members-select", workspaceId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("workspace_members")
-        .select("id, display_name, user_id")
-        .eq("workspace_id", workspaceId)
-        .eq("status", "active");
-      if (error) throw error;
-
-      // Resolve display names from profiles
-      const nullNameIds = data.filter((m) => !m.display_name).map((m) => m.user_id);
-      let profileMap = new Map<string, string>();
-      if (nullNameIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", nullNameIds);
-        profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) ?? []);
-      }
-
-      return data.map((m) => ({
-        ...m,
-        display_name: m.display_name || profileMap.get(m.user_id) || null,
-      }));
-    },
-    enabled: !!workspaceId,
-  });
+  const { data: members } = useWorkspaceMembersForSelect(workspaceId);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [title, setTitle] = useState("");
@@ -237,13 +211,13 @@ export function BugDetailPanel({
               >
                 <SelectTrigger className="mt-1">
                   {bug.assignee_id
-                    ? members?.find((m) => m.id === bug.assignee_id)?.display_name ?? "Unknown"
+                    ? members?.find((m) => m.id === bug.assignee_id)?.display_name ?? "Unnamed member"
                     : "Unassigned"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {members?.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.display_name ?? "Unknown"}</SelectItem>
+                    <SelectItem key={m.id} value={m.id}>{m.display_name ?? "Unnamed member"}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -309,7 +283,7 @@ export function BugDetailPanel({
           <Separator />
 
           <div className="space-y-2 text-xs text-muted-foreground">
-            <p>Reporter: {reporterName ?? "Unknown"}</p>
+            <p>Reporter: {reporterName ?? "Unnamed member"}</p>
             <p>Created: {new Date(bug.created_at!).toLocaleString()}</p>
             {bug.resolved_at && <p>Resolved: {new Date(bug.resolved_at).toLocaleString()}</p>}
           </div>

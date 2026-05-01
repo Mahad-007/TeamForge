@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useUpdateTask, useDeleteTask } from "@/hooks/use-tasks";
+import { useWorkspaceMembersForSelect } from "@/hooks/use-members";
 import {
   Sheet,
   SheetContent,
@@ -89,34 +90,7 @@ export function TaskDetailPanel({
     enabled: !!taskId,
   });
 
-  const { data: members } = useQuery({
-    queryKey: ["workspace-members-select", workspaceId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("workspace_members")
-        .select("id, display_name, user_id")
-        .eq("workspace_id", workspaceId)
-        .eq("status", "active");
-      if (error) throw error;
-
-      // Resolve display names from profiles where workspace_members.display_name is null
-      const nullNameIds = data.filter((m) => !m.display_name).map((m) => m.user_id);
-      let profileMap = new Map<string, string>();
-      if (nullNameIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", nullNameIds);
-        profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) ?? []);
-      }
-
-      return data.map((m) => ({
-        ...m,
-        display_name: m.display_name || profileMap.get(m.user_id) || null,
-      }));
-    },
-    enabled: !!workspaceId,
-  });
+  const { data: members } = useWorkspaceMembersForSelect(workspaceId);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [title, setTitle] = useState("");
@@ -252,14 +226,14 @@ export function TaskDetailPanel({
               >
                 <SelectTrigger className="mt-1">
                   {task.assignee_id
-                    ? members?.find((m) => m.id === task.assignee_id)?.display_name ?? "Unknown"
+                    ? members?.find((m) => m.id === task.assignee_id)?.display_name ?? "Unnamed member"
                     : "Unassigned"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {members?.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
-                      {m.display_name ?? "Unknown"}
+                      {m.display_name ?? "Unnamed member"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -357,7 +331,7 @@ export function TaskDetailPanel({
 
           {/* Metadata Footer */}
           <div className="space-y-2 text-xs text-muted-foreground">
-            <p>Reporter: {reporterName ?? "Unknown"}</p>
+            <p>Reporter: {reporterName ?? "Unnamed member"}</p>
             <p>Created: {new Date(task.created_at!).toLocaleString()}</p>
             {task.completed_at && (
               <p>
